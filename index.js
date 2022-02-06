@@ -22,12 +22,18 @@ async function run() {
         const database = client.db("homeService");
         const usersCollection = database.collection("users");
 
-
-        app.post("/order", async (req, res) => {
-            const order = req.body;
-            const result = await ordersCollection.insertOne(order);
+        app.post("/adduser", async (req, res) => {
+            const user = req.body;
+            const result = await usersCollection.insertOne(user);
             res.json(result);
         });
+        app.put('/adduser', async (req, res) => {
+            const user = req.body;
+            const filteredUsers = { email: user.email }
+            const options = { upsert: true };
+            const updateDoc = { $set: user };
+            const result = await usersCollection.updateOne(filteredUsers, updateDoc, options);
+        })
     } finally {
         // await client.close();
     }
