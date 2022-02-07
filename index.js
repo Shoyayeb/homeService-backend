@@ -26,6 +26,7 @@ async function run() {
         const database = client.db("homeService");
         const usersCollection = database.collection("users");
         const servicesCollection = database.collection("services");
+        const bookedServiceCollection = database.collection("bookedService");
 
         // get api for getting users
         app.get("/allusers", async (req, res) => {
@@ -39,11 +40,28 @@ async function run() {
             const services = await cursor.toArray();
             res.send(services);
         });
-
+        app.get("/service/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const service = await servicesCollection.findOne(query);
+            res.json(service);
+        });
+        // get api for getting booked services
+        app.get("/allservices", async (req, res) => {
+            const cursor = bookedServiceCollection.find({});
+            const bookedService = await cursor.toArray();
+            res.send(bookedService);
+        });
         // post api for adding services
         app.post("/addservice", async (req, res) => {
             const service = req.body;
             const result = await servicesCollection.insertOne(service);
+            res.json(result);
+        });
+        // post api for booking a service
+        app.post("/bookingservice", async (req, res) => {
+            const service = req.body;
+            const result = await bookedServiceCollection.insertOne(service);
             res.json(result);
         });
         // post api for adding users with email and password
