@@ -47,7 +47,7 @@ async function run() {
             res.json(service);
         });
         // get api for getting booked services
-        app.get("/allservices", async (req, res) => {
+        app.get("/bookedservices", async (req, res) => {
             const cursor = bookedServiceCollection.find({});
             const bookedService = await cursor.toArray();
             res.send(bookedService);
@@ -77,7 +77,17 @@ async function run() {
             const options = { upsert: true };
             const updateDoc = { $set: user };
             const result = await usersCollection.updateOne(filteredUsers, updateDoc, options);
-        })
+            res.json(result);
+        });
+        // put api for adding admin with email and password
+        app.put('/adduser/admin', async (req, res) => {
+            const admin = req.body;
+            const filteredUsers = { email: admin.email }
+            // const options = { upsert: true };
+            const updateDoc = { $set: { role: 'admin' } };
+            const result = await usersCollection.updateOne(filteredUsers, updateDoc);
+            res.json(result);
+        });
     } finally {
         // await client.close();
     }
