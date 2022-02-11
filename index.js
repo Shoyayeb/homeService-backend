@@ -34,12 +34,20 @@ async function run() {
             const users = await cursor.toArray();
             res.send(users);
         });
-        // get api for getting services
+        // get api for getting single user
+        app.get("/allusers/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { email: (id) };
+            const service = await usersCollection.findOne(query);
+            res.json(service);
+        });
+        // get api for getting all services
         app.get("/services", async (req, res) => {
             const cursor = servicesCollection.find({});
             const services = await cursor.toArray();
             res.send(services);
         });
+        // get api for getting single service
         app.get("/service/:id", async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
@@ -52,8 +60,6 @@ async function run() {
             const bookedService = await cursor.toArray();
             res.send(bookedService);
         });
-        // 
-        // 
         // GET API -for orders on dashboard
         app.get("/mybookedservices/:id", async (req, res) => {
             const id = req.params.id;
@@ -62,7 +68,6 @@ async function run() {
             const services = await cursor.toArray();
             res.json(services);
         });
-        //
         // post api for adding services
         app.post("/addservice", async (req, res) => {
             const service = req.body;
