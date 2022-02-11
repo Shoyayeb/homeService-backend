@@ -52,6 +52,17 @@ async function run() {
             const bookedService = await cursor.toArray();
             res.send(bookedService);
         });
+        // 
+        // 
+        // GET API -for orders on dashboard
+        app.get("/mybookedservices/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { uid: (id) };
+            const cursor = await bookedServiceCollection.find(query);
+            const services = await cursor.toArray();
+            res.json(services);
+        });
+        //
         // post api for adding services
         app.post("/addservice", async (req, res) => {
             const service = req.body;
@@ -88,6 +99,13 @@ async function run() {
             const result = await usersCollection.updateOne(filteredUsers, updateDoc);
             res.json(result);
         });
+        // delete api
+        app.delete('/removeservice/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await bookedServiceCollection.deleteOne(query);
+            res.json(result);
+        })
     } finally {
         // await client.close();
     }
