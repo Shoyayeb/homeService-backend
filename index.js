@@ -2,7 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const { MongoClient } = require("mongodb");
 const ObjectId = require("mongodb").ObjectId;
-
+const stripe = require('stripe')(process.env.STRIPE_SECRET);
 require("dotenv").config();
 // using express and cors
 const app = express();
@@ -36,10 +36,17 @@ async function run() {
         });
         // get api for getting single user
         app.get("/allusers/:id", async (req, res) => {
-            const id = req.params.id;
-            const query = { email: (id) };
-            const service = await usersCollection.findOne(query);
-            res.json(service);
+            const email = req.params.id;
+            console.log(email)
+            const query = { email: (email) };
+            const user = await usersCollection.findOne(query);
+            let isAdmin = false;
+            let gotUser = {};
+            if (user?.role === 'admin') {
+                isAdmin = true,
+                    gotUser = user;
+            }
+            res.json({ admin: isAdmin });
         });
         // get api for getting all services
         app.get("/services", async (req, res) => {
@@ -110,6 +117,19 @@ async function run() {
             const query = { _id: ObjectId(id) };
             const result = await bookedServiceCollection.deleteOne(query);
             res.json(result);
+        })
+
+
+        // stripe
+        app.post('/create_payment', async (req, res) => {
+            const paymentInfo = req.body;
+            const amount = paymentInfo.price * 100;
+            const paymentIntent = await stripe.paymentIntents.create({
+                currency: 'usd',
+                amount: amount,
+                payment_method_types: ['card']
+            });
+            res.json({ clientSecret: paymentIntent.client_secret })
         })
     } finally {
         // await client.close();
