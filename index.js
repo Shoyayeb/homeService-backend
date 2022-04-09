@@ -67,7 +67,7 @@ async function run() {
             const bookedService = await cursor.toArray();
             res.send(bookedService);
         });
-        // GET API -for orders on dashboard
+        // get api -for orders on dashboard
         app.get("/mybookedservices/:id", async (req, res) => {
             const id = req.params.id;
             const query = { uid: (id) };
@@ -111,14 +111,20 @@ async function run() {
             const result = await usersCollection.updateOne(filteredUsers, updateDoc);
             res.json(result);
         });
-        // delete api
+        // delete api for removing booked service
         app.delete('/removeservice/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const result = await bookedServiceCollection.deleteOne(query);
             res.json(result);
         })
-
+        // delete api for removing service
+        app.delete('/services/:removeId', async (req, res) => {
+            const removeId = req.params.removeId;
+            const query = { _id: ObjectId(removeId) };
+            const result = await servicesCollection.deleteOne(query);
+            res.json(result);
+        })
 
         // stripe
         // app.post('/create_payment', async (req, res) => {
