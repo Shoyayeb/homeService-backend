@@ -27,6 +27,7 @@ async function run() {
         const usersCollection = database.collection("users");
         const servicesCollection = database.collection("services");
         const bookedServiceCollection = database.collection("bookedService");
+        const reviewCollections = database.collection("reviews");
 
         // get api for getting users
         app.get("/allusers", async (req, res) => {
@@ -75,6 +76,12 @@ async function run() {
             const services = await cursor.toArray();
             res.json(services);
         });
+        // get api for reviews
+        app.get("/reviews", async (req, res) => {
+            const cursor = reviewCollections.find({});
+            const reviews = await cursor.toArray();
+            res.send(reviews);
+        })
         // post api for adding services
         app.post("/addservice", async (req, res) => {
             const service = req.body;
@@ -91,6 +98,12 @@ async function run() {
         app.post("/adduser", async (req, res) => {
             const user = req.body;
             const result = await usersCollection.insertOne(user);
+            res.json(result);
+        });
+        // post api for reviews
+        app.post("/reviews", async (req, res) => {
+            const review = req.body;
+            const result = await reviewCollections.insertOne(review);
             res.json(result);
         });
         // put api for adding user with third party service login
