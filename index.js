@@ -14,7 +14,6 @@ admin.initializeApp({
 });
 const auth = admin.auth();
 
-
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -36,15 +35,11 @@ async function run() {
         const reviewCollections = database.collection("reviews");
 
         app.get("/allusers", async (req, res) => {
-            // const cursor = usersCollection.find({});
-            // const users = await cursor.toArray();
-
             auth.listUsers(100).then((userRecords) => {
                 res.send(userRecords);
             }).catch((error) => {
                 res.send({ error });
             });
-
         });
 
         app.get("/allusers/:id", async (req, res) => {
@@ -106,24 +101,22 @@ async function run() {
             res.json(result);
         });
 
-        app.post("/adduser", async (req, res) => {
-            const user = req.body;
-            const result = await usersCollection.insertOne(user);
-            res.json(result);
-        });
-
         app.post("/reviews", async (req, res) => {
             const review = req.body;
             const result = await reviewCollections.insertOne(review);
             res.json(result);
         });
 
+        app.post("/adduser", async (req, res) => {
+            const user = req.body;
+            const result = await usersCollection.insertOne(user);
+            res.json(result);
+        });
+
         app.put('/adduser', async (req, res) => {
             const user = req.body;
-            const filteredUsers = { email: user.email }
-            const options = { upsert: true };
-            const updateDoc = { $set: user };
-            const result = await usersCollection.updateOne(filteredUsers, updateDoc, options);
+            const filteredUsers = { email: user.email };
+            const result = await usersCollection.updateOne(filteredUsers, { $set: user }, { upsert: true });
             res.json(result);
         });
 
@@ -147,6 +140,20 @@ async function run() {
             const query = { _id: ObjectId(removeId) };
             const result = await servicesCollection.deleteOne(query);
             res.json(result);
+        });
+
+        app.delete('/removeuser', async (req, res) => {
+            const { uid } = req.body;
+            if (req.body.uid) {
+                auth.deleteUser(uid)
+                    .then(() => {
+                        res.json({ success: true });
+                    })
+                    .catch((error) => {
+                        res.json({ success: false, error: error.message });
+                        console.log('Error deleting user:', error);
+                    });
+            } else res.json({ success: false, error: "invalid uid" });
         });
     } finally {
         // await client.close();
