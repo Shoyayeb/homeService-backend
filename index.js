@@ -121,11 +121,19 @@ async function run() {
         });
 
         app.put('/adduser/admin', async (req, res) => {
-            const admin = req.body;
-            const filteredUsers = { email: admin.email }
-            const updateDoc = { $set: { role: 'admin' } };
-            const result = await usersCollection.updateOne(filteredUsers, updateDoc);
-            res.json(result);
+            const adminEmail = req.body.email;
+            auth.getUserByEmail(adminEmail)
+                .then((userRecord) => {
+                    auth.setCustomUserClaims(userRecord.uid, { admin: true })
+                        .then(() => {
+                            res.json({ status: 200, success: true, message: "user updated to admin" })
+                        }).catch(() => {
+                            res.json({ status: 400, success: false, message: error.message });
+                        });
+                })
+                .catch((error) => {
+                    res.json({ status: 400, success: false, message: error.message });
+                });
         });
 
         app.delete('/removeservice/:id', async (req, res) => {
@@ -147,13 +155,12 @@ async function run() {
             if (req.body.uid) {
                 auth.deleteUser(uid)
                     .then(() => {
-                        res.json({ success: true });
+                        res.json({ status: 200, success: true });
                     })
                     .catch((error) => {
-                        res.json({ success: false, error: error.message });
-                        console.log('Error deleting user:', error);
+                        res.json({ status: 400, success: false, message: error.message });
                     });
-            } else res.json({ success: false, error: "invalid uid" });
+            } else res.json({ status: 400, success: false, message: "invalid uid" });
         });
     } finally {
         // await client.close();
